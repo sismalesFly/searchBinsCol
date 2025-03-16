@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Verificar que se haya proporcionado un parámetro
+if [ "$#" -ne 1 ]; then
+    echo "Uso: searchBinsCol <nombre_de_gtfobin>"
+    echo "Ejemplo: searchBinsCol bash"
+    exit 1
+fi
+
+# Asignar el parámetro a una variable
+GTFOBIN_NAME=$1
+
+# URL base de GTFOBins
+URL="https://gtfobins.github.io/gtfobins/$GTFOBIN_NAME/"
+
+# Extraer, decodificar y filtrar el contenido
+CONTENT=$(curl -s "$URL" | \
+grep -oP '<pre><code>\K.*?(?=</code></pre>)' | \
+sed -e "s/&#39;/'/g" -e 's/&quot;/"/g' | \
+grep -v "perl -e 'exec \"/bin/sh\";'" | \
+grep -v "sudo perl -e 'exec \"/bin/sh\";'")
+
+# Verificar si se obtuvo contenido
+if [ -z "$CONTENT" ]; then
+    echo "Error: No se pudo obtener contenido para '$GTFOBIN_NAME'. Verifica el nombre."
+    exit 1
+fi
+
+# Mostrar el contenido
+echo "Contenido extraído para '$GTFOBIN_NAME':"
+echo "----------------------------------------"
+echo "$CONTENT"
+echo "----------------------------------------"
